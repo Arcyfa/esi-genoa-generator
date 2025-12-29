@@ -70,3 +70,4 @@ target/
 generated/*.egg-info
 generated/python-client/.tox
 openapi-generator-cli.jar
+generated/python-client/
