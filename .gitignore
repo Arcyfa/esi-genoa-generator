@@ -69,3 +69,4 @@ target/
 .venv-build
 generated/*.egg-info
 generated/python-client/.tox
+openapi-generator-cli.jar
