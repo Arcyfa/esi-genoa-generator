@@ -1,0 +1,12 @@
+{
+  "generatorName": "python",
+  "inputSpec": "https://esi.evetech.net/meta/openapi.json",
+  "outputDir": "generated/python-client",
+  "templateDir": "templates/python",
+  "additionalProperties": {
+    "packageName": "esi_genoa_client",
+    "packageVersion": "0.1.0",
+    "python_requires": ">=3.13,<4",
+    "generatorLanguageVersion": "3.13"
+  }
+}
