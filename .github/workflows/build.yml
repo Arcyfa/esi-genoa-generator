@@ -35,7 +35,6 @@ jobs:
       - name: Get package version
         id: get_version
         run: |
-          set -euo pipefail
           chmod +x ./scripts/get_package_version.sh || true
           version=$(./scripts/get_package_version.sh)
           echo "version=$version" >> "$GITHUB_OUTPUT"
@@ -46,49 +45,10 @@ jobs:
       - name: Build package
         run: ./scripts/build-python.sh
 
-      # create-release action removed: use gh CLI (authenticated with GITHUB_TOKEN)
-
-      - name: Install GitHub CLI
+      - name: Commit and tag package
         run: |
-          set -euo pipefail
-          # Install GitHub CLI from official packages (reliable across runner images)
-          curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg \
-            | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
-          sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg
-          echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" \
-            | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
-          sudo apt-get update -y
-          sudo apt-get install -y gh
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          VERSION="$(./scripts/get_package_version.sh)"
+          gh release create v${VERSION} ./generated/python-client/dist/*.tgz
 
-      - name: Authenticate GitHub CLI
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          set -euo pipefail
-          if [ -z "${GITHUB_TOKEN:-}" ]; then
-            echo "GITHUB_TOKEN is not set"
-            exit 1
-          fi
-          echo "$GITHUB_TOKEN" | gh auth login --with-token
-
-      - name: Create draft GitHub Release for build artifacts (gh)
-        id: create_release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          set -euo pipefail
-          RELEASE_TAG="v${{ steps.get_version.outputs.version }}"
-          echo "Creating draft release $RELEASE_TAG"
-          gh release create "$RELEASE_TAG" --draft --title "Build ${{ steps.get_version.outputs.version }}" --notes "" || true
-
-      - name: Upload dist/* to draft release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          set -euo pipefail
-          RELEASE_TAG="v${{ steps.get_version.outputs.version }}"
-          echo "Uploading files in generated/python-client/dist to release $RELEASE_TAG"
-          for f in generated/python-client/dist/*; do
-            echo "Uploading $f"
-            gh release upload "$RELEASE_TAG" "$f" --clobber
-          done
