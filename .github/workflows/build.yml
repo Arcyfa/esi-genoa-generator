@@ -1,0 +1,75 @@
+name: Build
+
+on:
+  workflow_dispatch:
+    inputs:
+      python-version:
+        description: 'Python version to use for tests/build'
+        required: false
+        default: '3.13'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ github.event.inputs.python-version }}
+
+      - name: Make scripts executable
+        run: chmod +x ./scripts/*.sh || true
+
+      - name: Generate client
+        run: ./scripts/generate.sh
+
+      - name: Get package version
+        id: get_version
+        run: |
+          set -euo pipefail
+          VERSION=$(python - <<'PY'
+import json
+data = json.load(open('config.json'))
+v = data.get('additionalProperties', {}).get('packageVersion') or data.get('packageVersion') or data.get('version') or '0.0.0'
+print(v)
+PY
+)
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Run tests (tox)
+        run: ./scripts/run-tox.sh
+
+      - name: Build package
+        run: ./scripts/build-python.sh
+
+      - name: Create draft GitHub Release for build artifacts
+        id: create_release
+        uses: actions/create-release@v1
+        with:
+          tag_name: v${{ steps.get_version.outputs.version }}
+          release_name: Build ${{ steps.get_version.outputs.version }}
+          draft: true
+
+      - name: Install GitHub CLI
+        uses: cli/gh-action@v2
+
+      - name: Upload dist/* to draft release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          RELEASE_TAG="v${{ steps.get_version.outputs.version }}"
+          echo "Uploading files in generated/python-client/dist to release $RELEASE_TAG"
+          for f in generated/python-client/dist/*; do
+            echo "Uploading $f"
+            gh release upload "$RELEASE_TAG" "$f" --clobber
+          done
