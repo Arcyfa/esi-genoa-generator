@@ -39,29 +39,4 @@ jobs:
         run: ./scripts/build-python.sh
 
   # Optional: publish on tag v* if TWINE_* secrets are set
-  publish:
-    needs: build
-    if: startsWith(github.ref, 'refs/tags/v')
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.13'
-      - name: Make scripts executable
-        run: chmod +x ./scripts/*.sh || true
-      - name: Check TWINE secrets
-        env:
-          TWINE_USERNAME: ${{ secrets.TWINE_USERNAME }}
-          TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
-        run: |
-          if [ -z "$TWINE_USERNAME" ] || [ -z "$TWINE_PASSWORD" ]; then
-            echo "TWINE_USERNAME or TWINE_PASSWORD secret is not set. Aborting publish.";
-            exit 1
-          fi
-      - name: Build and upload to PyPI
-        env:
-          TWINE_USERNAME: ${{ secrets.TWINE_USERNAME }}
-          TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
-        run: ./scripts/build-python.sh --upload-pypi
+  # Publish is handled in a dedicated tag-triggered workflow (.github/workflows/publish.yml)
