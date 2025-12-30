@@ -1,4 +1,10 @@
 {
+  "gitHost": "github.com",
+  "gitUserId": "Arcyfa",
+  "gitRepoId": "esi-genoa-client",
+  "infoNameO": "Arcyfa",
+  "infoEmail": "arcyfa_github@pm.me",
+  "packageUrl": "https://github.com/Arcyfa/esi-genoa-client",
   "generatorName": "python",
   "inputSpec": "https://esi.evetech.net/meta/openapi.json",
   "outputDir": "generated/python-client",
