@@ -10,5 +10,29 @@ if [ ! -f "$CONFIG" ]; then
   exit 0
 fi
 
-version=$(python -c "import json,sys;d=json.load(open('$CONFIG'));v=d.get('additionalProperties',{}).get('packageVersion') or d.get('packageVersion') or d.get('version') or '0.0.0'; sys.stdout.write(v)")
+# Try to extract `packageVersion` from `additionalProperties` block first,
+# then fallback to top-level `packageVersion`, then `version`.
+version=""
+
+# 1) Try within the additionalProperties block
+version=$(sed -n '/"additionalProperties"[[:space:]]*:/,/}/p' "$CONFIG" \
+  | sed -n 's/.*"packageVersion"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' \
+  | tr -d '\r' | head -n1 || true)
+
+# 2) Fallback to top-level packageVersion
+if [ -z "$version" ]; then
+  version=$(sed -n 's/.*"packageVersion"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$CONFIG" \
+    | tr -d '\r' | head -n1 || true)
+fi
+
+# 3) Fallback to version
+if [ -z "$version" ]; then
+  version=$(sed -n 's/.*"version"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$CONFIG" \
+    | tr -d '\r' | head -n1 || true)
+fi
+
+if [ -z "$version" ]; then
+  version="0.0.0"
+fi
+
 echo "$version"
