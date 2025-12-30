@@ -46,15 +46,7 @@ jobs:
       - name: Build package
         run: ./scripts/build-python.sh
 
-      - name: Create draft GitHub Release for build artifacts
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: v${{ steps.get_version.outputs.version }}
-          release_name: Build ${{ steps.get_version.outputs.version }}
-          draft: true
+      # create-release action removed: use gh CLI (authenticated with GITHUB_TOKEN)
 
       - name: Install GitHub CLI
         run: |
@@ -67,6 +59,27 @@ jobs:
             | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
           sudo apt-get update -y
           sudo apt-get install -y gh
+
+      - name: Authenticate GitHub CLI
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [ -z "${GITHUB_TOKEN:-}" ]; then
+            echo "GITHUB_TOKEN is not set"
+            exit 1
+          fi
+          echo "$GITHUB_TOKEN" | gh auth login --with-token
+
+      - name: Create draft GitHub Release for build artifacts (gh)
+        id: create_release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          RELEASE_TAG="v${{ steps.get_version.outputs.version }}"
+          echo "Creating draft release $RELEASE_TAG"
+          gh release create "$RELEASE_TAG" --draft --title "Build ${{ steps.get_version.outputs.version }}" --notes "" || true
 
       - name: Upload dist/* to draft release
         env:
