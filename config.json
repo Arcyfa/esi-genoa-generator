@@ -11,7 +11,7 @@
   "templateDir": "templates/python",
   "additionalProperties": {
     "packageName": "esi_genoa_client",
-    "packageVersion": "0.1.0",
+    "packageVersion": "0.1.1",
     "python_requires": ">=3.13,<4",
     "generatorLanguageVersion": "3.13"
   }
