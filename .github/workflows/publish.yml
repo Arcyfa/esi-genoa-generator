@@ -22,7 +22,7 @@ jobs:
         run: chmod +x ./scripts/*.sh || true
 
       - name: Check TWINE secrets
-        if: not(contains(github.ref, '-dryrun'))
+        if: "!contains(github.ref, '-dryrun')"
         env:
           TWINE_USERNAME: ${{ secrets.TWINE_USERNAME }}
           TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
@@ -37,14 +37,14 @@ jobs:
         run: ./scripts/build-python.sh
 
       - name: Build and upload to TestPyPI
-        if: and(startsWith(github.ref, 'refs/tags/testpypi-'), not(contains(github.ref, '-dryrun')))
+        if: "startsWith(github.ref, 'refs/tags/testpypi-') && !contains(github.ref, '-dryrun')"
         env:
           TWINE_USERNAME: ${{ secrets.TWINE_USERNAME }}
           TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
         run: ./scripts/build-python.sh --upload-testpypi
 
       - name: Build and upload to PyPI
-        if: and(startsWith(github.ref, 'refs/tags/v'), not(contains(github.ref, '-dryrun')))
+        if: "startsWith(github.ref, 'refs/tags/v') && !contains(github.ref, '-dryrun')"
         env:
           TWINE_USERNAME: ${{ secrets.TWINE_USERNAME }}
           TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
