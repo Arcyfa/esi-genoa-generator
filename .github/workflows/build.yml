@@ -45,5 +45,5 @@ jobs:
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
           VERSION="$(./scripts/get_package_version.sh)"
-          gh release create v${VERSION} ./generated/python-client/dist/*.tgz
+          gh release create v${VERSION} ./generated/python-client/dist/esi_genoa_client*
 
