@@ -36,14 +36,9 @@ jobs:
         id: get_version
         run: |
           set -euo pipefail
-          VERSION=$(python - <<'PY'
-import json
-data = json.load(open('config.json'))
-v = data.get('additionalProperties', {}).get('packageVersion') or data.get('packageVersion') or data.get('version') or '0.0.0'
-print(v)
-PY
-)
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          chmod +x ./scripts/get_package_version.sh || true
+          version=$(./scripts/get_package_version.sh)
+          echo "version=$version" >> "$GITHUB_OUTPUT"
 
       - name: Run tests (tox)
         run: ./scripts/run-tox.sh
