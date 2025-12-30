@@ -55,7 +55,16 @@ jobs:
           draft: true
 
       - name: Install GitHub CLI
-        uses: cli/gh-action@v2
+        run: |
+          set -euo pipefail
+          # Install GitHub CLI from official packages (reliable across runner images)
+          curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg \
+            | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
+          sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg
+          echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" \
+            | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+          sudo apt-get update -y
+          sudo apt-get install -y gh
 
       - name: Upload dist/* to draft release
         env:
