@@ -6,7 +6,7 @@
   "infoEmail": "arcyfa_github@pm.me",
   "packageUrl": "https://github.com/Arcyfa/esi-genoa-client",
   "generatorName": "python",
-  "inputSpec": "https://esi.evetech.net/meta/openapi.json",
+  "inputSpec": "https://esi.evetech.net/meta/openapi.json?compatibility_date=2025-12-16",
   "outputDir": "generated/python-client",
   "templateDir": "templates/python",
   "additionalProperties": {
